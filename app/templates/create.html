@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{% block title %} Add New Employee to Factory {% endblock %}</h1>
+<form method="post">
+    <p>
+        <label for="emp_id">Employee Number</label>
+        <input type="number" name="emp_id" placeholder="Employee Number">
+        </input>
+    </p>
+
+    <p>
+        <label for="emp_fname">Employee Firstname</label>
+        <input type="text" name="emp_fname" placeholder="First Name">
+        </input>
+    </p>
+
+    <p>
+        <label for="emp_lname">Employee Lastname</label>
+        <input type="text" name="emp_lname" placeholder="Last Name">
+        </input>
+    </p>
+
+    <p>
+        <label for="emp_dob">Date of Birth</label>
+        <input type="date" name="emp_dob" placeholder="YYYY-MM-DD">
+        </input>
+    </p>
+    <p>
+        <label for="emp_doj">Date of Joining</label>
+        <input type="date" name="emp_doj" placeholder="YYYY-MM-DD">
+        </input>
+    </p>
+
+    <p>
+        <label for="title">Salary</label>
+        <input type="number" name="salary" placeholder="Salary">
+        </input>
+    </p>
+    <p>
+        <button type="submit">Submit</button>
+    </p>
+</form>
+{% endblock %}

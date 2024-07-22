@@ -1,0 +1,42 @@
+version: "3.7"
+
+services:
+  postgres:
+    image: postgres:15.1  
+    hostname: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=factory
+      - DB_HOST=0.0.0.0
+      - TZ=utc
+    ports:
+      - target: 5432
+        published: 5432
+        protocol: tcp
+        mode: host
+    volumes:
+      - ./data/postgres/factory:/var/lib/postgresql/data
+      - ./9employee_data.sql:/data/9employee_data.sql
+      - ./data-employees_01.sql:/data/data-employees_01.sql
+    deploy:
+      restart_policy:
+        condition: on-failure
+    #command: ["/bin/bash", "./initdb-data.sh"] 
+      #command: ./initdb-data.sh 
+# Deploy the postgres container 
+# docker-compose -f postgres-docker-compose.yml up -d
+
+# Connect to the factory database 
+# psql -h localhost -U postgres -d factory
+
+# Initilize the database 
+# python init_db.py
+
+# Load data into factory database 
+# postgres@postgres:/data$ psql factory < 9employee_data.sql
+
+# Load more data 
+# postgres@postgres:/data$ psql factory < data-employees_01.sql
+# postgres@postgres:/data$ psql factory < data-employees_02.sql
+

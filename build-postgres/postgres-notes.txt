@@ -1,0 +1,107 @@
+Step 1: Build docker container 
+$ docker-compose -f postgres-docker-compose.yml up -d
+
+
+(.venv) rbabu@k8s-master:~/EmployeeApp/build-postgres$ docker-compose -f postgres-docker-compose.yml up -d 
+Creating build-postgres_postgres_1 ... done
+(.venv) rbabu@k8s-master:~/EmployeeApp/build-postgres$ docker ps 
+CONTAINER ID   IMAGE           COMMAND                  CREATED         STATUS         PORTS                                       NAMES
+991c541bc592   postgres:15.1   "docker-entrypoint.s…"   3 seconds ago   Up 2 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   build-postgres_postgres_1
+(.venv) rbabu@k8s-master:~/EmployeeApp/build-postgres$ docker logs -f 991c541bc592 
+
+PostgreSQL Database directory appears to contain a database; Skipping initialization
+
+2024-07-22 05:15:18.927 UTC [1] LOG:  starting PostgreSQL 15.1 (Debian 15.1-1.pgdg110+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 10.2.1-6) 10.2.1 20210110, 64-bit
+2024-07-22 05:15:18.927 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2024-07-22 05:15:18.927 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2024-07-22 05:15:18.938 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2024-07-22 05:15:18.951 UTC [29] LOG:  database system was interrupted; last known up at 2024-07-22 05:09:19 UTC
+2024-07-22 05:15:21.330 UTC [29] LOG:  database system was not properly shut down; automatic recovery in progress
+2024-07-22 05:15:21.337 UTC [29] LOG:  redo starts at 0/197F860
+2024-07-22 05:15:21.338 UTC [29] LOG:  invalid record length at 0/19A68D0: wanted 24, got 0
+2024-07-22 05:15:21.339 UTC [29] LOG:  redo done at 0/19A6898 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2024-07-22 05:15:21.355 UTC [27] LOG:  checkpoint starting: end-of-recovery immediate wait
+2024-07-22 05:15:21.454 UTC [27] LOG:  checkpoint complete: wrote 42 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.012 s, sync=0.067 s, total=0.105 s; sync files=34, longest=0.007 s, average=0.002 s; distance=156 kB, estimate=156 kB
+2024-07-22 05:15:21.464 UTC [1] LOG:  database system is ready to accept connections
+^C
+(.venv) rbabu@k8s-master:~/EmployeeApp/build-postgres$ sh initdb-data.sh 
+Initializing data
+Done !
+(.venv) rbabu@k8s-master:~/EmployeeApp/build-postgres$ 
+
+
+Step 2: Run the initdb-data.sh to create table and load one record 
+(.venv) rbabu@k8s-master:~/EmployeeApp/build-postgres$ sh initdb-data.sh 
+Initializing data
+Done !
+(.venv) rbabu@k8s-master:~/EmployeeApp/build-postgres$
+
+
+Step 2: Exec into the container and run the sql scripts to initilize data 
+
+(.venv) rbabu@k8s-master:~/EmployeeApp/build-postgres$ docker exec -it 991c541bc592 /bin/bash 
+root@postgres:/# su - postgres 
+postgres@postgres:~$ psql 
+psql (15.1 (Debian 15.1-1.pgdg110+1))
+Type "help" for help.
+
+postgres=# \c factory 
+You are now connected to database "factory" as user "postgres".
+factory=# \i /data/  
+9employee_data.sql     data-employees_01.sql  
+factory=# \i /data/9employee_data.sql 
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+factory=# 
+
+factory=# \i /data/data-employees_01.sql       # Ignore the errors and warnings 
+
+Step 3: Query the employee data 
+
+factory=# SELECT COUNT(*) FROM employees; 
+ count 
+-------
+   628
+(1 row)
+
+factory=# SELECT * FROM employees; 
+ emp_id | emp_fname  | emp_lname  |  emp_dob   |  emp_doj   | salary 
+--------+------------+------------+------------+------------+--------
+  10001 | Vinay      | Kumar      | 2001-04-01 | 2021-01-15 |   5000
+  10002 | Raj        | Sankar     | 2001-12-01 | 2021-01-16 |   6000
+  10003 | Abhishek   | lodh       | 2002-10-01 | 2019-09-28 |   8500
+  10004 | Rita       | Sharma     | 2003-04-01 | 2019-04-28 |   7000
+  10005 | Amrita     | Shah       | 2002-08-15 | 2018-05-29 |   6000
+  10006 | Sanjay     | Kumar      | 2001-06-01 | 2019-04-28 |   7500
+  10007 | Avijit     | Roy        | 2002-09-01 | 2019-09-11 |   6500
+  10008 | Vikash     | Mehta      | 2001-12-01 | 2018-11-28 |   8300
+  10009 | Neelanjan  | Biswa      | 2002-02-01 | 2019-02-28 |   5500
+  10010 | Sukhbir    | Singh      | 2003-04-01 | 2020-11-17 |   7050
+  12481 | Jared      | Gerardin   | 2003-04-16 | 2022-09-16 |   8973
+  12424 | Lacie      | Sharrier   | 2001-03-28 | 2023-06-24 |   8633
+  12852 | Britta     | Copin      | 2001-10-24 | 2021-03-24 |   8182
+  12394 | Herminia   | Grundey    | 2002-05-02 | 2023-12-24 |   7676
+
+Step 4: Run the flask app from the app folder 
+(.venv) rbabu@k8s-master:~/EmployeeApp/app$ flask run -h 0.0.0.0 --debug 
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.10:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 100-839-271
+192.168.0.116 - - [22/Jul/2024 05:31:01] "GET / HTTP/1.1" 200 -
+
+
+
+Step 4: Done 

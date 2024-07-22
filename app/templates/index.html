@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{% block title %} Employees Information Database {% endblock %}</h1>
+{% for employee in employees %}
+<div class='employee'>
+    <h3>Employee Name - {{ employee[1] }} {{ employee[2] }}</h3>
+    <i>
+        <p>
+            Employee Number:{{ employee[0] }}
+        </p>
+
+    </i>
+    <i>
+        <p>Date of Birth:{{ employee[3] }} </p>
+    </i>
+    <i>
+        <p>Date of Joining:{{ employee[4] }} </p>
+    </i>
+    <i>
+        <p>Salary:{{ employee[5] }}</p>
+    </i>
+</div>
+{% endfor %}
+{% endblock %}
